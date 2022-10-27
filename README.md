@@ -2,7 +2,7 @@
 
 This project automatically sorts teachers and students into classes based off of students' first choice of class, and volunteer capabilities.
 
-In order to use the algorithm, copy and paste your inputs into [https://docs.google.com/spreadsheets/d/1hhejbcEfYhPKThzSN3yg0JwOySxaif1rJNzkm-JwAoY/edit#gid=880690583](this) spreadsheet. All you have to do is copy and paste your information into the corresponding columns, download the python files, and run main.py! If you do this, the class assignments will be downloaded as a csv file for you to import into google sheets (in google sheets click file --> import). 
+In order to use the algorithm, go to [https://docs.google.com/spreadsheets/d/1hhejbcEfYhPKThzSN3yg0JwOySxaif1rJNzkm-JwAoY/edit#gid=880690583](this) spreadsheet. All you have to do is copy and paste your information into the corresponding columns, download the python files, and run main.py! If you do this, the class assignments will be downloaded as a csv file for you to import into google sheets (in google sheets click file --> import). 
 
 # Algorithm 
 
