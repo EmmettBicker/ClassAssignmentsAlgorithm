@@ -95,10 +95,7 @@ def main():
     final_class_assignments.insert(loc=0,
           column="Classes",
           value=[volunteer_to_class[name] for name in volunteer_names])
-    print(final_class_assignments)
     
-
-    print(final_class_assignments)
     final_class_assignments.to_csv('assignments.csv')
     
     
