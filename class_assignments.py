@@ -3,7 +3,7 @@ import math
 import pandas as pd
 from random import randint
 
-def assign(volunteers, students):
+def assign(volunteers, students, classes):
     
 
   # volunteers = {
@@ -22,60 +22,44 @@ def assign(volunteers, students):
   total_volunteers = len(volunteers)
   number_of_classes = 4
 
-  volunteers = pd.DataFrame(volunteers,index=[[f"Capability for class {i}" for i in range(4) ]])
+  volunteers = pd.DataFrame(volunteers,index=[[f"Capability for class {i}" for i in range(len(classes)) ]])
 
-
+  
   # students = (([ ([i] * randint(1,25)) for i in range(4)]))
   
   
   students = pd.DataFrame(students,columns=["Students"])
 
   # In percent of people who enrolled
-  class_popularity = {
-    0 : students[students["Students"] == 0].count() / students.count(),
-    1 : students[students["Students"] == 1].count() / students.count(),
-    2 : students[students["Students"] == 2].count() / students.count(),
-    3 : students[students["Students"] == 3].count() / students.count(),
-  }
+  class_popularity = {}
+  for i in range(len(classes)):
+    class_popularity[i] = students[students["Students"] == i].count() / students.count()
+ 
+  class_attendance = dict(
+    (i,students[students["Students"] == i].count()) for i in range(len(classes))
+  )
 
-  class_attendance = {
-    0 : students[students["Students"] == 0].count(),
-    1 : students[students["Students"] == 1].count(),
-    2 : students[students["Students"] == 2].count(),
-    3 : students[students["Students"] == 3].count()
-  }
-
-  desired_volunteer_split = {
-    0 : math.ceil(class_popularity[0] * total_volunteers),
-    1 : math.ceil(class_popularity[1] * total_volunteers),
-    2 : math.ceil(class_popularity[2] * total_volunteers),
-    3 : math.ceil(class_popularity[3] * total_volunteers)
-  }
+  desired_volunteer_split = dict(
+    (i,math.ceil(class_popularity[i] * total_volunteers)) for i in range(len(classes))
+  )
 
   # Cut off volunteers from most popular classes if rounding doens't work well
   while (total_volunteers - sum(desired_volunteer_split.values()) != 0):
     most_popular_class = max(desired_volunteer_split, key=desired_volunteer_split.get)
     desired_volunteer_split[most_popular_class] -= 1
-
-
-
   
 
   volunteer_capability_percents = volunteers.sum(axis=1) / total_volunteers
-
+  
   volunteers_by_capability = list(sorted(volunteers.items(),key=lambda x : x[1].sum()))
 
 
-
-  volunteer_class_list = {
-    0 : [],
-    1 : [],
-    2 : [],
-    3 : []
-  }
+  volunteer_class_list = dict(
+    (i, []) for i in range(len(classes))
+  )
 
   # make a list of what volunteers can do
-
+  
   leftover_volunteers = []
   for volunteer in volunteers_by_capability:
     volunteer_name = volunteer[0]
@@ -84,8 +68,9 @@ def assign(volunteers, students):
 
     for idx, capability in enumerate(volunteer[1]):
       if capability == 1 and desired_volunteer_split[idx] != 0:
-
-        if volunteer_capability_percents[capability] < min_capability:
+        # If the volunteer can teach the class and the classs needs students, if this is the most restrictive
+        # class add the volunteer to that class
+        if volunteer_capability_percents[capability][0] < min_capability:
           
           min_capability = volunteer_capability_percents[idx]
           desired_index = idx
@@ -100,12 +85,10 @@ def assign(volunteers, students):
     else:
       leftover_volunteers.append(volunteer_name)
 
-  student_to_teacher_ratios = {
-    0 : (class_attendance[0] / len(volunteer_class_list[0]))[0],
-    1 : (class_attendance[1] / len(volunteer_class_list[1]))[0],
-    2 : (class_attendance[2] / len(volunteer_class_list[2]))[0],
-    3 : (class_attendance[3] / len(volunteer_class_list[3]))[0]
-  }
+
+  student_to_teacher_ratios = dict(
+    (i , (class_attendance[i] / len(volunteer_class_list[i]))[0]) for i in range(len(classes))
+  )
 
 
   for volunteer in leftover_volunteers:
@@ -113,28 +96,22 @@ def assign(volunteers, students):
     desired_index = -1
     
     for idx, capability in enumerate(volunteers[volunteer]):
+      # If the teacher can teach and that class needs more students, record that class as a class to add to
       if capability == 1 and volunteers[volunteer][idx] > max_student_to_teacher_ratio:
         max_student_to_teacher_ratio = student_to_teacher_ratios[idx]
         desired_index = idx
     volunteer_class_list[desired_index].append(volunteer)
     leftover_volunteers.remove(volunteer)
-    student_to_teacher_ratios = {
-      0 : (class_attendance[0] / len(volunteer_class_list[0]))[0],
-      1 : (class_attendance[1] / len(volunteer_class_list[1]))[0],
-      2 : (class_attendance[2] / len(volunteer_class_list[2]))[0],
-      3 : (class_attendance[3] / len(volunteer_class_list[3]))[0]
-    }
+    student_to_teacher_ratios = dict(
+      (i , (class_attendance[i] / len(volunteer_class_list[i]))[0]) for i in range(len(classes))
+    )
 
   for volunteer in leftover_volunteers:
     for idx, capability in enumerate(volunteers[volunteer]):
       if capability == 1:
         volunteer_class_list[idx].append(volunteer)
         leftover_volunteers.remove(volunteer)
-
+  
   return volunteer_class_list, student_to_teacher_ratios, leftover_volunteers, class_popularity
-  print(student_to_teacher_ratios)
-  print(max(student_to_teacher_ratios, key=student_to_teacher_ratios.get))
-
-  print(volunteer_class_list)
-  print(leftover_volunteers)
+  
   
